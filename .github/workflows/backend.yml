@@ -37,7 +37,9 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
             # Ensure necessary directories exist
-            mkdir -p $EC2_PROJECT_DIR
+            if [ ! -d "$EC2_PROJECT_DIR" ]; then
+              mkdir -p $EC2_PROJECT_DIR
+            fi
 
             # Navigate to project directory
             cd $EC2_PROJECT_DIR
