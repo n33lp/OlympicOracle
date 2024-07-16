@@ -59,23 +59,23 @@ jobs:
 
             # Install dependencies
             pip install gunicorn
-            pip install -r backend/olympic_project/requirements.txt
+            pip install -r $EC2_PROJECT_DIR/backend/olympic_project/requirements.txt
 
             # Create Gunicorn service file
             sudo bash -c 'cat > /etc/systemd/system/gunicorn.service << EOL
-            [Unit]
-            Description=gunicorn daemon
-            After=network.target
+[Unit]
+Description=gunicorn daemon
+After=network.target
 
-            [Service]
-            User=ubuntu
-            Group=www-data
-            WorkingDirectory=$EC2_PROJECT_DIR
-            ExecStart=/home/ubuntu/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:$EC2_PROJECT_DIR.sock olympic_project.wsgi:application
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=$EC2_PROJECT_DIR
+ExecStart=/home/ubuntu/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:$EC2_PROJECT_DIR.sock olympic_project.wsgi:application
 
-            [Install]
-            WantedBy=multi-user.target
-            EOL'
+[Install]
+WantedBy=multi-user.target
+EOL'
 
             # Reload systemd and restart Gunicorn
             sudo systemctl daemon-reload
@@ -84,21 +84,21 @@ jobs:
 
             # Create Nginx configuration file
             sudo bash -c 'cat > /etc/nginx/sites-available/olympic_project << EOL
-            server {
-                listen 80;
-                server_name $EC2_HOST;
+server {
+    listen 80;
+    server_name '$EC2_HOST';
 
-                location = /favicon.ico { access_log off; log_not_found off; }
-                location /static/ {
-                    root $EC2_PROJECT_DIR;
-                }
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root $EC2_PROJECT_DIR;
+    }
 
-                location / {
-                    include proxy_params;
-                    proxy_pass http://unix:$EC2_PROJECT_DIR.sock;
-                }
-            }
-            EOL'
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:$EC2_PROJECT_DIR.sock;
+    }
+}
+EOL'
 
             # Enable Nginx configuration and restart Nginx
             sudo ln -sf /etc/nginx/sites-available/olympic_project /etc/nginx/sites-enabled/
