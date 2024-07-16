@@ -1,35 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Container, Box, Typography, Select, MenuItem, FormControl, InputLabel, CircularProgress, Paper } from '@mui/material';
+import axios from 'axios';
 
 export default function Inputs() {
-  // State to hold the selected medal, sport, and sub-sport
   const [sport, setSport] = useState('');
   const [subSport, setSubSport] = useState('');
   const [medal, setMedal] = useState('');
   const [sports, setSports] = useState({});
-  const [filter, setFilter] = useState(''); // State to hold the current filter
-//   let dataToDisplay = useState('');
-  const [loading, setLoading] = useState(false); // State to manage loading state
-  const [predictionResult, setPredictionResult] = useState(''); // State to hold the prediction result
+  const [filter, setFilter] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [predictionResult, setPredictionResult] = useState('');
+  const [error, setError] = useState('');
 
-  // Load data into sports
-  useEffect(() => {
-    const fetchData = async () => {
-      console.log("attempting to make api call");
-      try {
-        const response = await fetch("http://localhost:8000/getsports/all");
-        const data = await response.json();
-        console.log(data.disciplines);  // Assuming your endpoint returns descriptions
-        setSports(data.disciplines);    // Set the sports data
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
+  // Custom hook to fetch sports data
+  const fetchSportsData = useCallback(async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/getsports/all');
+      setSports(response.data.disciplines);
+    } catch (err) {
+      console.error('Error fetching sports data:', err);
+      setError('Failed to load sports data');
+    }
   }, []);
 
-  // Handler to update the selected medal
+  useEffect(() => {
+    fetchSportsData();
+  }, [fetchSportsData]);
+
   const handleMedalChange = (event) => {
     setMedal(event.target.value);
   };
@@ -38,113 +35,57 @@ export default function Inputs() {
     setFilter(event.target.value);
   };
 
-  // Handler to update the selected sport
   const handleSportChange = (event) => {
     setSport(event.target.value);
-    setSubSport(''); // Reset sub-sport when the main sport changes
+    setSubSport('');
   };
 
-  // Handler to update the selected sub-sport
   const handleSubSportChange = (event) => {
     setSubSport(event.target.value);
   };
 
-  // Handler to fetch new data on Predict button click
   const handleButtonClick = async () => {
-    console.log('Selected Medal:', medal);
-    console.log('Selected Sport:', sport);
-    console.log('Selected Sub-Sport:', subSport);
-
-    // SPORT
-
-    if (filter === 'sport'){
-        if (!sport) {
-            console.error('Please select a sport');
-            return;
-        }
-        else if (filter === 'subSport' && !subSport) {
-            console.error('Please select a sub-sport');
-            return;
-        }
-        else if (!medal) {
-            console.error('Please select a medal');
-            return;
-        }
-        else {
-            console.log("attempting to make sports api call")
-            try {
-                const response = await fetch("http://localhost:8000/bysport/", {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ medalType: medal, sport: sport, subsport: subSport }),
-                  });
-                  const data = await response.json();
-                  console.log('Prediction result:', data.message);
-                  setPredictionResult(data.message);
-                  setLoading(false);
-                  // Handle the prediction result as needed
-                } catch (error) {
-                  console.error('Error fetching prediction:', error);
-                  setLoading(false);
-                }
-        }
+    if (!medal) {
+      setError('Please select a medal');
+      return;
     }
 
-    // COUNTRY
+    setLoading(true);
+    setError('');
+    setPredictionResult('');
 
-    else if (filter === 'country'){
-        if (!medal) {
-            console.error('Please select a medal');
-            return;
+    try {
+      let response;
+      if (filter === 'sport') {
+        if (!sport) {
+          setError('Please select a sport');
+          setLoading(false);
+          return;
         }
-        else {
-            console.log("attempting to make countries api call")
-            try {
-                const response = await fetch("http://localhost:8000/bycountry/", {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ medalType: medal }),
-                  });
-                const data = await response.json();
-                console.log('Prediction result:', data.message);
-                setPredictionResult(data.message);
-                setLoading(false);
-                // Handle the prediction result as needed
-              } catch (error) {
-                console.error('Error fetching prediction:', error);
-                setLoading(false);
-              }
-        }
+        response = await axios.post('http://localhost:8000/bysport/', {
+          medalType: medal,
+          sport: sport,
+          subsport: subSport
+        });
+      } else if (filter === 'country') {
+        response = await axios.post('http://localhost:8000/bycountry/', {
+          medalType: medal
+        });
+      }
+
+      setPredictionResult(response.data.message);
+    } catch (err) {
+      console.error('Error fetching prediction:', err);
+      setError('Failed to fetch prediction');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Box
-      id="inputs"
-      sx={{
-        color: 'white',
-        pb: 10,
-      }}
-    >
-      <Container
-        sx={{
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: { xs: 3, sm: 6 },
-        }}
-      >
-        <Box
-          sx={{
-            width: { sm: '100%', md: '60%' },
-            textAlign: { sm: 'left', md: 'center' },
-          }}
-        >
+    <Box id="inputs" sx={{ color: 'white', pb: 10 }}>
+      <Container sx={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: { xs: 3, sm: 6 } }}>
+        <Box sx={{ width: { sm: '100%', md: '60%' }, textAlign: { sm: 'left', md: 'center' } }}>
           <Typography component="h2" variant="h4" color="primary">
             Inputs
           </Typography>
@@ -198,48 +139,26 @@ export default function Inputs() {
           Predict
         </Button>
 
-        {loading && <CircularProgress sx={{ mt: 2, color: '#000' }} />} {/* Show loading spinner when loading */}
+        {loading && <CircularProgress sx={{ mt: 2, color: '#000' }} />}
 
-        {!loading && predictionResult && (
-
-            <Box
-            sx={{
-                display: 'flex',
-                // m: 1,
-                width: 1,
-                height: 100,
-            }}>
-                <Paper
-                elevation={3}
-                sx={{
-                    textAlign:"center",
-                    alignItems: 'center',
-                    alignContent: 'center',
-                    width: 1,
-                    borderRadius: 5,
-                    borderColor: '#000',
-                }}>
-                    <Typography variant="subtitle1" sx={{ mt: 2, color: "#000" }}>
-                        <i>According to our model, based on your inputs, our Prediction is: </i> 
-
-                    </Typography>
-
-                    <Typography
-                        display='inline'
-                        variant="h3"
-                        sx={{
-                            // fontSize: 'clamp(1rem, 1vw, 1rem)',
-                            fontWeight: 'bold',
-                            color: (theme) =>
-                            theme.palette.mode === 'light' ? 'primary.main' : 'primary.light',
-                        }}
-                        >
-                            {predictionResult}!
-                    </Typography>
-                </Paper>
-            </Box>
+        {!loading && error && (
+          <Typography variant="subtitle1" color="error" sx={{ mt: 2 }}>
+            {error}
+          </Typography>
         )}
 
+        {!loading && predictionResult && (
+          <Box sx={{ display: 'flex', width: 1, height: 100, mt: 2 }}>
+            <Paper elevation={3} sx={{ textAlign: 'center', alignItems: 'center', width: 1, borderRadius: 5, borderColor: '#000' }}>
+              <Typography variant="subtitle1" sx={{ mt: 2, color: '#000' }}>
+                <i>According to our model, based on your inputs, our Prediction is: </i>
+              </Typography>
+              <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                {predictionResult}!
+              </Typography>
+            </Paper>
+          </Box>
+        )}
       </Container>
     </Box>
   );
