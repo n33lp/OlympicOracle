@@ -36,26 +36,23 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
-            # Ensure necessary directories exist
-            mkdir -p $EC2_PROJECT_DIR
-
-            # Navigate to project directory
-            cd $EC2_PROJECT_DIR
-
-            # Clone the repository if it doesn't exist
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/yourusername/yourrepository.git .
+            sudo apt update
+            sudo apt install -y git python3-pip python3-venv nginx
+            if [ ! -d "$EC2_PROJECT_DIR" ]; then
+              mkdir -p $EC2_PROJECT_DIR
+              git clone https://github.com/yourusername/yourrepository.git $EC2_PROJECT_DIR
             else
+              cd $EC2_PROJECT_DIR
               git pull origin backend
             fi
-
-            # Set up virtual environment
-            if [ ! -d "/home/ubuntu/venv" ]; then
-              python3 -m venv /home/ubuntu/venv
+            cd $EC2_PROJECT_DIR
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
             fi
-            source /home/ubuntu/venv/bin/activate
-
-            # Install dependencies
-            pip install -r $EC2_PROJECT_DIR/backend/olympic_project/requirements.txt
+            source venv/bin/activate
+            pip install -r backend/olympic_project/requirements.txt
+            python manage.py migrate
+            sudo systemctl restart gunicorn
+            sudo systemctl restart nginx
           EOF
         shell: bash
