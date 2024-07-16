@@ -69,7 +69,5 @@ jobs:
 
             python manage.py migrate
 
-            sudo systemctl restart gunicorn || sudo systemctl status gunicorn
-            sudo systemctl restart nginx || sudo systemctl status nginx
           EOF
         shell: bash
