@@ -102,5 +102,5 @@ jobs:
             sudo ln -sf /etc/nginx/sites-available/olympic_project /etc/nginx/sites-enabled/
             sudo nginx -t
             sudo systemctl restart nginx
-EOF
+        EOF
         shell: bash
