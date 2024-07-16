@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Container, Box, Typography, Select, MenuItem, FormControl, InputLabel, CircularProgress, Paper } from '@mui/material';
 import axios from 'axios';
 
+const apiUrl = process.env.REACT_APP_API_URL;
+
 export default function Inputs() {
   const [sport, setSport] = useState('');
   const [subSport, setSubSport] = useState('');
@@ -12,10 +14,9 @@ export default function Inputs() {
   const [predictionResult, setPredictionResult] = useState('');
   const [error, setError] = useState('');
 
-  // Custom hook to fetch sports data
   const fetchSportsData = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8000/getsports/all');
+      const response = await axios.get(`${apiUrl}/getsports/all`);
       setSports(response.data.disciplines);
     } catch (err) {
       console.error('Error fetching sports data:', err);
@@ -62,13 +63,13 @@ export default function Inputs() {
           setLoading(false);
           return;
         }
-        response = await axios.post('http://localhost:8000/bysport/', {
+        response = await axios.post(`${apiUrl}/bysport/`, {
           medalType: medal,
           sport: sport,
           subsport: subSport
         });
       } else if (filter === 'country') {
-        response = await axios.post('http://localhost:8000/bycountry/', {
+        response = await axios.post(`${apiUrl}/bycountry/`, {
           medalType: medal
         });
       }
