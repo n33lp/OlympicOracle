@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Container, Box, Typography, Select, MenuItem, FormControl, InputLabel, CircularProgress, Paper } from '@mui/material';
 import axios from 'axios';
 
-const apiUrl = process.env.REACT_APP_API_URL;
+const apiUrl = process.env.REACT_APP_API_URL + '/api';
 
 export default function Inputs() {
   const [sport, setSport] = useState('');
@@ -17,6 +17,7 @@ export default function Inputs() {
   const fetchSportsData = useCallback(async () => {
     try {
       const response = await axios.get(`${apiUrl}/getsports/all`);
+      
       setSports(response.data.disciplines);
     } catch (err) {
       console.error('Error fetching sports data:', err);
