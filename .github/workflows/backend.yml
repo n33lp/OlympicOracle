@@ -32,6 +32,13 @@ jobs:
           echo "$EC2_SSH_KEY" > key.pem
           chmod 600 key.pem
 
+      - name: Compress project files
+        run: tar -czf OlympicOracle.tar.gz ./*
+
+      - name: Copy project files to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no -i key.pem OlympicOracle.tar.gz $EC2_USER@$EC2_HOST:/home/ubuntu/
+
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
@@ -43,11 +50,9 @@ jobs:
 
             if [ ! -d "$PROJECT_DIR" ]; then
               mkdir -p "$PROJECT_DIR"
-              git clone git@github.com:yourusername/yourrepository.git "$PROJECT_DIR"
-            else
-              cd "$PROJECT_DIR"
-              git pull origin backend
             fi
+
+            tar -xzf /home/ubuntu/OlympicOracle.tar.gz -C "$PROJECT_DIR"
 
             cd "$PROJECT_DIR/backend/olympic_project"
             if [ ! -d "venv" ]; then
