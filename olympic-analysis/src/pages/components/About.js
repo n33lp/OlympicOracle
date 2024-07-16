@@ -49,21 +49,12 @@ export default function About() {
               fontSize: 'clamp(3.5rem, 10vw, 4rem)',
             }}
           >
-            Have you ever wanted to know who would win the <i>next</i> <Typography
-              display='inline'
-              variant="h1"
-              sx={{
-                fontSize: 'clamp(3rem, 10vw, 4rem)',
-                color: (theme) =>
-                  theme.palette.mode === 'light' ? 'primary.main' : 'primary.light',
-              }}
-            >
-               Olympics?
-            </Typography>
+            Have you ever wanted to know who would win the <i>next</i>{" "}
+            <span style={{ fontSize: 'clamp(3rem, 10vw, 4rem)', color: (theme) => theme.palette.mode === 'light' ? theme.palette.primary.main : theme.palette.primary.light }}>
+              Olympics?
+            </span>
           </Typography>
-
           {/* Subtitle for the about section. */}
-
           <Typography
             textAlign="center"
             color="text.secondary"
@@ -72,8 +63,8 @@ export default function About() {
             We provide the most accurate predictions (as good as we can get for a model built in 24 hours) for the next Olympics!
             Scroll down to see our predictions based on your criteria and how we got them!
           </Typography>
-        </Stack>
 
+        </Stack>
         {/* Olympics Image */}
 
         <Box
