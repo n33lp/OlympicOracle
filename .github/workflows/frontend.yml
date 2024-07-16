@@ -19,14 +19,13 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Navigate to frontend directory
-        run: cd olympic-analysis
-
       - name: Install dependencies
         run: npm install
+        working-directory: olympic-analysis
 
       - name: Build app
         run: npm run build
+        working-directory: olympic-analysis
 
       - name: Upload to S3
         uses: jakejarvis/s3-sync-action@master
