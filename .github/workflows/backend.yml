@@ -59,7 +59,10 @@ jobs:
 
             PROJECT_DIR="/home/ubuntu/OlympicOracle/backend/olympic_project"
 
-            tar -xzf /home/ubuntu/OlympicOracle.tar.gz -C "$PROJECT_DIR"
+            tar -xvzf OlympicOracle.tar.gz
+
+            echo "2"
+            ls
 
             source venv/bin/activate
             pip install -r requirements.txt
