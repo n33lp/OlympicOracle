@@ -28,10 +28,8 @@ jobs:
         run: |
           cd backend/olympic_project/
           python3 -m venv venv
-          ls
           source venv/bin/activate
           pip install -r requirements.txt
-
 
       - name: Add SSH key
         run: |
@@ -44,10 +42,8 @@ jobs:
       - name: Remove Old Files
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
-            ls
-            rm -rf OlympicOracle
+            rm -rf backend
             rm -f OlympicOracle.tar.gz
-            ls
           EOF
         shell: bash
 
@@ -58,33 +54,51 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
-            echo "1"
-            ls
-
-            echo sudo apt-get install -y nginx supervisor
-
-            PROJECT_DIR="/home/ubuntu/backend/olympic_project"
+            sudo apt-get update
+            sudo apt-get install -y nginx supervisor
 
             tar -xvzf OlympicOracle.tar.gz
-
-            echo "2"
-            ls
-            rm key.pem
-            
-            echo "3"
-            ls
             cd backend/olympic_project/
-            
-            echo "4"
-            ls
-            
-            echo "5"
-            ls
             source venv/bin/activate
             pip install -r requirements.txt --break-system-packages
-
             python3 manage.py migrate
 
-            python3 manage.py 0.0.0.0:8000
+            # Create supervisor configuration for the Django app
+            cat <<EOL | sudo tee /etc/supervisor/conf.d/olympic.conf
+            [program:olympic]
+            command=/home/ubuntu/backend/olympic_project/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 olympic_project.wsgi:application
+            directory=/home/ubuntu/backend/olympic_project
+            user=ubuntu
+            autostart=true
+            autorestart=true
+            stopasgroup=true
+            killasgroup=true
+            stdout_logfile=/var/log/olympic.log
+            stderr_logfile=/var/log/olympic.err
+            EOL
 
+            # Reload supervisor to apply the new configuration
+            sudo supervisorctl reread
+            sudo supervisorctl update
+            sudo supervisorctl restart all
+
+            # Configure Nginx
+            sudo rm /etc/nginx/sites-enabled/default
+            cat <<EOL | sudo tee /etc/nginx/sites-available/olympic
+            server {
+                listen 80;
+                server_name 3.22.116.95;
+
+                location / {
+                    proxy_pass http://127.0.0.1:8000;
+                    proxy_set_header Host \$host;
+                    proxy_set_header X-Real-IP \$remote_addr;
+                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto \$scheme;
+                }
+            }
+            EOL
+
+            sudo ln -s /etc/nginx/sites-available/olympic /etc/nginx/sites-enabled/
+            sudo systemctl restart nginx
           EOF
