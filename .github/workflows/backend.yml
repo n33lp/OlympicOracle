@@ -80,7 +80,7 @@ jobs:
             # Reload supervisor to apply the new configuration
             sudo supervisorctl reread
             sudo supervisorctl update
-            sudo supervisorctl restart all
+            sudo supervisorctl restart olympic
 
             # Configure Nginx
             sudo rm /etc/nginx/sites-enabled/default
