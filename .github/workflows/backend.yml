@@ -52,20 +52,11 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
+            sudo apt-get install -y nginx
 
-
-            PROJECT_DIR="/home/ubuntu/OlympicOracle"
-
-            if [ ! -d "$PROJECT_DIR" ]; then
-              mkdir -p "$PROJECT_DIR"
-            fi
+            PROJECT_DIR="/home/ubuntu/OlympicOracle/backend/olympic_project"
 
             tar -xzf /home/ubuntu/OlympicOracle.tar.gz -C "$PROJECT_DIR"
-
-            cd "$PROJECT_DIR/backend/olympic_project"
-            if [ ! -d "venv" ]; then
-              python3 -m venv venv
-            fi
 
             source venv/bin/activate
             pip install -r requirements.txt
