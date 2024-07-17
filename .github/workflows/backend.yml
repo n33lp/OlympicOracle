@@ -84,4 +84,7 @@ jobs:
             pip install -r requirements.txt --break-system-packages
 
             python3 manage.py migrate
+
+            pyhon3 manage.py 0.0.0.0:8000
+
           EOF
