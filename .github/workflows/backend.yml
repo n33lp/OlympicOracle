@@ -84,9 +84,4 @@ jobs:
             pip install -r requirements.txt --break-system-packages
 
             python3 manage.py migrate
-
-            sudo systemctl restart nginx
-            sudo supervisorctl reread
-            sudo supervisorctl update
-            sudo supervisorctl restart gunicorn
           EOF
