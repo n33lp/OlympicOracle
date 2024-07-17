@@ -2,6 +2,8 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+import joblib
+import os
 
 # Declare global variables to store data and models
 df_medals = None
@@ -68,8 +70,11 @@ def load_and_prepare_data():
 
     # Split the data and train the model
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model = RandomForestClassifier(n_estimators=20, random_state=15)
     model.fit(X_train, y_train)
+
+    # Save the model and encoders
+    save_model_and_encoders()
 
 def clean_most_medals():
     global df_medals, most_gold_medals, most_silver_medals, most_bronze_medals
@@ -88,6 +93,42 @@ def clean_most_medals():
     bronze_medal_counts = df_bronze_medals.groupby(['year', 'country_name']).size().reset_index(name='bronze_count')
     most_bronze_medals = bronze_medal_counts.loc[bronze_medal_counts.groupby('year')['bronze_count'].idxmax()]
 
+def save_model_and_encoders():
+    global model, le_discipline, le_event, le_country, le_medal
+    
+    # Get the directory where the script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    model_dir = os.path.join(script_dir, 'model')
+    
+    # Create the directory if it doesn't exist
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+    
+    # Save the model and encoders
+    joblib.dump(model, os.path.join(model_dir, 'random_forest_model.pkl'))
+    joblib.dump(le_discipline, os.path.join(model_dir, 'le_discipline.pkl'))
+    joblib.dump(le_event, os.path.join(model_dir, 'le_event.pkl'))
+    joblib.dump(le_country, os.path.join(model_dir, 'le_country.pkl'))
+    joblib.dump(le_medal, os.path.join(model_dir, 'le_medal.pkl'))
+
+def load_model_and_encoders():
+    global model, le_discipline, le_event, le_country, le_medal
+    
+    # Get the directory where the script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    model_dir = os.path.join(script_dir, 'model')
+
+    # Load the model and encoders if they exist
+    model = joblib.load(os.path.join(model_dir, 'random_forest_model.pkl'))
+    le_discipline = joblib.load(os.path.join(model_dir, 'le_discipline.pkl'))
+    le_event = joblib.load(os.path.join(model_dir, 'le_event.pkl'))
+    le_country = joblib.load(os.path.join(model_dir, 'le_country.pkl'))
+    le_medal = joblib.load(os.path.join(model_dir, 'le_medal.pkl'))
+
 def startup():
     load_and_prepare_data()
+    load_model_and_encoders()
     print("Data loaded and model trained on startup.")
+
+if __name__ == "__main__":
+    startup()
