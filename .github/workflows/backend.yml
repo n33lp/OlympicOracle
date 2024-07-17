@@ -31,7 +31,7 @@ jobs:
 
 
       - name: Install dependencies
-        run: pip install -r backend/olympic_project/requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Add SSH key
         run: |
