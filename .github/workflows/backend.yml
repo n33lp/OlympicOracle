@@ -82,6 +82,7 @@ jobs:
             echo "5"
             ls
             source venv/bin/activate
+            pip install -r requirements.txt
 
             python3 manage.py migrate
 
