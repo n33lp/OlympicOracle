@@ -126,7 +126,7 @@ def load_model_and_encoders():
     le_medal = joblib.load(os.path.join(model_dir, 'le_medal.pkl'))
 
 def startup():
-    load_and_prepare_data()
+    # load_and_prepare_data()
     load_model_and_encoders()
     print("Data loaded and model trained on startup.")
 
