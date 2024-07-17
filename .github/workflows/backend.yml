@@ -52,6 +52,9 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
+            echo "1"
+            ls
+
             sudo apt-get install -y nginx
 
             PROJECT_DIR="/home/ubuntu/OlympicOracle/backend/olympic_project"
