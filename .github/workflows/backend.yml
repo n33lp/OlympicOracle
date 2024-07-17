@@ -33,7 +33,7 @@ jobs:
           chmod 600 key.pem
 
       - name: Compress project files
-        run: tar -czf OlympicOracle.tar.gz ./*
+        run: tar -czf OlympicOracle.tar.gz ./backend
 
       - name: Remove Old Files
         run: |
@@ -78,8 +78,10 @@ jobs:
             source venv/bin/activate
             pip install -r requirements.txt
 
+            python3 manage.py migrate
 
-            python manage.py migrate
-
+            sudo systemctl restart nginx
+            sudo supervisorctl reread
+            sudo supervisorctl update
+            sudo supervisorctl restart gunicorn
           EOF
-        shell: bash
