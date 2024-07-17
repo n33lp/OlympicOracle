@@ -28,6 +28,7 @@ jobs:
         run: |
           cd backend/olympic_project/
           python3 -m venv venv
+          ls
 
 
       - name: Install dependencies
