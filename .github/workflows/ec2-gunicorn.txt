@@ -1,0 +1,14 @@
+------------------------------------------------------------------------------------------------------
+/etc/supervisor/conf.d/gunicorn.conf
+------------------------------------------------------------------------------------------------------
+[program:gunicorn]
+directory=/home/ubuntu/backend/olympic_project
+command=/home/ubuntu/backend/olympic_project/venv/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/backend/olympic_project/app.sock olympic_project.wsgi:application  
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/gunicorn/gunicorn.err.log
+stdout_logfile=/var/log/gunicorn/gunicorn.out.log
+
+[group:guni]
+programs:gunicorn
+------------------------------------------------------------------------------------------------------
