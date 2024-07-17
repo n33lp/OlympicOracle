@@ -35,6 +35,16 @@ jobs:
       - name: Compress project files
         run: tar -czf OlympicOracle.tar.gz ./*
 
+      - name: Remove Old Files
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
+            ls
+            rm -rf OlympicOracle
+            rm -f OlympicOracle.tar.gz
+            ls
+          EOF
+        shell: bash
+
       - name: Copy project files to EC2
         run: |
           scp -o StrictHostKeyChecking=no -i key.pem OlympicOracle.tar.gz $EC2_USER@$EC2_HOST:/home/ubuntu/
@@ -42,9 +52,7 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
-            set -e
-            sudo apt update
-            sudo apt install -y git python3-pip python3-venv nginx
+
 
             PROJECT_DIR="/home/ubuntu/OlympicOracle"
 
