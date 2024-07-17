@@ -29,10 +29,9 @@ jobs:
           cd backend/olympic_project/
           python3 -m venv venv
           ls
+          source venv/bin/activate
+          pip install -r requirements.txt
 
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
 
       - name: Add SSH key
         run: |
