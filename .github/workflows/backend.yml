@@ -61,9 +61,9 @@ jobs:
             echo "1"
             ls
 
-            sudo apt-get install -y nginx supervisor
+            echo sudo apt-get install -y nginx supervisor
 
-            PROJECT_DIR="/home/ubuntu/OlympicOracle/backend/olympic_project"
+            PROJECT_DIR="/home/ubuntu/backend/olympic_project"
 
             tar -xvzf OlympicOracle.tar.gz
 
@@ -77,7 +77,6 @@ jobs:
             
             echo "4"
             ls
-            python3 -m venv venv
             
             echo "5"
             ls
