@@ -63,14 +63,21 @@ jobs:
 
             echo "2"
             ls
-
+            rm key.pem
+            
+            echo "3"
+            ls
+            cd backend/olympic_project/
+            
+            echo "4"
+            ls
+            python3 -m venv venv
+            
+            echo "5"
+            ls
             source venv/bin/activate
             pip install -r requirements.txt
 
-            if [ ! -f "manage.py" ]; then
-              echo "manage.py not found in $PROJECT_DIR/backend/olympic_project"
-              exit 1
-            fi
 
             python manage.py migrate
 
