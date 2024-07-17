@@ -2,9 +2,9 @@ name: Deploy Django Backend
 
 on:
   push:
-    branches: [ "backend" ]
+    branches: ["backend"]
   pull_request:
-    branches: [ "backend" ]
+    branches: ["backend"]
 
 jobs:
   deploy:
@@ -13,7 +13,6 @@ jobs:
     env:
       EC2_USER: ${{ secrets.EC2_USER }}
       EC2_HOST: ${{ secrets.EC2_HOST }}
-      EC2_PROJECT_DIR: ${{ secrets.EC2_PROJECT_DIR }}
       EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
 
     steps:
@@ -23,23 +22,66 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.8'
+          python-version: '3.10.7'
 
       - name: Install dependencies
         run: pip install -r backend/olympic_project/requirements.txt
 
-      - name: Deploy to EC2
+      - name: Add SSH key
         run: |
           echo "$EC2_SSH_KEY" > key.pem
           chmod 600 key.pem
+
+      - name: Compress project files
+        run: tar -czf OlympicOracle.tar.gz ./backend
+
+      - name: Remove Old Files
+        run: |
           ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
-            mkdir -p $EC2_PROJECT_DIR
-            cd $EC2_PROJECT_DIR
-            git pull origin main
-            source venv/bin/activate
-            pip install -r backend/olympic_project/requirements.txt
-            python manage.py migrate
-            sudo systemctl restart gunicorn
-            sudo systemctl restart nginx
+            ls
+            rm -rf OlympicOracle
+            rm -f OlympicOracle.tar.gz
+            ls
           EOF
         shell: bash
+
+      - name: Copy project files to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no -i key.pem OlympicOracle.tar.gz $EC2_USER@$EC2_HOST:/home/ubuntu/
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST << 'EOF'
+            echo "1"
+            ls
+
+            sudo apt-get install -y nginx supervisor
+
+            PROJECT_DIR="/home/ubuntu/OlympicOracle/backend/olympic_project"
+
+            tar -xvzf OlympicOracle.tar.gz
+
+            echo "2"
+            ls
+            rm key.pem
+            
+            echo "3"
+            ls
+            cd backend/olympic_project/
+            
+            echo "4"
+            ls
+            python3 -m venv venv
+            
+            echo "5"
+            ls
+            source venv/bin/activate
+            pip install -r requirements.txt
+
+            python3 manage.py migrate
+
+            sudo systemctl restart nginx
+            sudo supervisorctl reread
+            sudo supervisorctl update
+            sudo supervisorctl restart gunicorn
+          EOF
