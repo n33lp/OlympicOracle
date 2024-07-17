@@ -55,7 +55,7 @@ jobs:
             echo "1"
             ls
 
-            sudo apt-get install -y nginx
+            sudo apt-get install -y nginx supervisor
 
             PROJECT_DIR="/home/ubuntu/OlympicOracle/backend/olympic_project"
 
